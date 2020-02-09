@@ -48,11 +48,14 @@
       <artifactId>vertx-junit5</artifactId>
       <scope>test</scope>
     </dependency>
-    
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-junit5-web-client</artifactId>
+      <scope>test</scope>
+    </dependency>
 	<dependency>
 		<groupId>io.vertx</groupId>
 		<artifactId>vertx-web-client</artifactId>
-		<version>3.8.5</version>
 	</dependency>
 
     <dependency>

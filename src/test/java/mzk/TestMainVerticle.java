@@ -16,24 +16,28 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.codec.BodyCodec;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import io.vertx.junit5.web.VertxWebClientExtension;
+import io.vertx.junit5.web.WebClientOptionsInject;
 import mzk.model.Product;
 
-@ExtendWith(VertxExtension.class)
+@ExtendWith({VertxExtension.class, VertxWebClientExtension.class})
 @TestMethodOrder(OrderAnnotation.class)
 public class TestMainVerticle {
 	
 	final static String API_PRODUCTS = "/api/products";
 	final static String ADDRESS = "localhost";
 	final static int PORT = MainVerticle.HTTP_PORT;
-	private static WebClient webClient;
+	
+	@WebClientOptionsInject
+	public WebClientOptions options = new WebClientOptions().setDefaultHost(ADDRESS).setDefaultPort(PORT);
 
 	@BeforeAll
 	static void deploy_verticle(Vertx vertx, VertxTestContext testContext) {
 		vertx.deployVerticle(new MainVerticle(), testContext.succeeding(id -> {
-			webClient = WebClient.create(vertx);
 			testContext.completeNow();
 		}));
 	}
@@ -41,8 +45,8 @@ public class TestMainVerticle {
 	@Test
 	@Order(1)
 	@DisplayName("Test index.html")
-	void checkIndexPage(Vertx vertx, VertxTestContext testContext) {
-		webClient.get(PORT, ADDRESS, "/").as(BodyCodec.string())
+	void checkIndexPage(WebClient webClient, Vertx vertx, VertxTestContext testContext) {
+		webClient.get("/").as(BodyCodec.string())
 				.send(testContext.succeeding(resp -> {
 					testContext.verify(() -> {
 						assertEquals(200, resp.statusCode());
@@ -55,8 +59,8 @@ public class TestMainVerticle {
 	@Test
 	@Order(2)
 	@DisplayName("Test /api/products GET (List products)")
-	void checkApiGetList(Vertx vertx, VertxTestContext testContext) {
-		webClient.get(PORT, ADDRESS, API_PRODUCTS).as(BodyCodec.string())
+	void checkApiGetList(WebClient webClient, Vertx vertx, VertxTestContext testContext) {
+		webClient.get(API_PRODUCTS).as(BodyCodec.string())
 				.send(testContext.succeeding(resp -> {
 					testContext.verify(() -> {
 						assertEquals(200, resp.statusCode());
@@ -67,10 +71,10 @@ public class TestMainVerticle {
 	
 	@Test
 	@Order(3)
-	@DisplayName("Test /api/products GET (Get one product)")
-	void checkApiGetOne(Vertx vertx, VertxTestContext testContext) {
+	@DisplayName("Test /api/products/1 GET (Get one product)")
+	void checkApiGetOne(WebClient webClient, Vertx vertx, VertxTestContext testContext) {
 		int productId = 1;
-		webClient.get(PORT, ADDRESS, API_PRODUCTS + "/" + productId).as(BodyCodec.string())
+		webClient.get(API_PRODUCTS + "/" + productId).as(BodyCodec.string())
 				.send(testContext.succeeding(resp -> {
 					testContext.verify(() -> {
 						assertEquals(200, resp.statusCode());
@@ -84,7 +88,7 @@ public class TestMainVerticle {
 	@Test
 	@Order(4)
 	@DisplayName("Test /api/products POST (Add new product)")
-	public void checkApiAddProduct(Vertx vertx, VertxTestContext testContext) {
+	public void checkApiAddProduct(WebClient webClient, Vertx vertx, VertxTestContext testContext) {
 
 		String productName = "Test";
 		Long productBarCode = 1L;
@@ -95,7 +99,7 @@ public class TestMainVerticle {
 				.put("barCode", productBarCode)
 				.put("serialNumber", productSerialNumber);
 
-		webClient.post(PORT, ADDRESS, API_PRODUCTS)
+		webClient.post(API_PRODUCTS)
 
 				.putHeader("content-type", "application/json")
 				.putHeader("content-length", Integer.toString(json.toString().length()))
@@ -120,8 +124,8 @@ public class TestMainVerticle {
 	
 	@Test
 	@Order(5)
-	@DisplayName("Test /api/products PUT (Update existing product)")
-	public void checkApiUpdateProduct(Vertx vertx, VertxTestContext testContext) {
+	@DisplayName("Test /api/products/0 PUT (Update existing product)")
+	public void checkApiUpdateProduct(WebClient webClient, Vertx vertx, VertxTestContext testContext) {
 
 		int productId = 0;
 		String productName = "New name";
@@ -133,7 +137,7 @@ public class TestMainVerticle {
 				.put("barCode", productBarCode)
 				.put("serialNumber", productSerialNumber);
 
-		webClient.put(PORT, ADDRESS, API_PRODUCTS + "/" + productId)
+		webClient.put(API_PRODUCTS + "/" + productId)
 
 				.putHeader("content-type", "application/json")
 				.putHeader("content-length", Integer.toString(json.toString().length()))
@@ -158,11 +162,11 @@ public class TestMainVerticle {
 	
 	@Test
 	@Order(6)
-	@DisplayName("Test /api/products DELETE (Remove existing product)")
-	public void checkApiDeleteProduct(Vertx vertx, VertxTestContext testContext) {
+	@DisplayName("Test /api/products/0 DELETE (Remove existing product)")
+	public void checkApiDeleteProduct(WebClient webClient, Vertx vertx, VertxTestContext testContext) {
 		
 		int productId = 0;
-		webClient.delete(PORT, ADDRESS, API_PRODUCTS + "/" + productId)
+		webClient.delete(API_PRODUCTS + "/" + productId)
 
 		.send(testContext.succeeding(resp -> {
 
