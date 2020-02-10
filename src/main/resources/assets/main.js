@@ -4,8 +4,8 @@ $(function () {
     initModal();
 });
 
-function create(name, barCode, serialNumber) {
-    $.post("/api/products", JSON.stringify({name: name, barCode: barCode, serialNumber: serialNumber}), function (response) {
+function create(name, barCode, serialNumber, sold) {
+    $.post("/api/products", JSON.stringify({name: name, barCode: barCode, serialNumber: serialNumber, sold: sold}), function (response) {
     	swal("Product '" + response.name + "' added!", { icon: "success" });
         load();
     }, "json").fail(function(response) {
@@ -39,11 +39,11 @@ function remove(id) {
 	
 }
 
-function update(id, name, barCode, serialNumber) {
+function update(id, name, barCode, serialNumber, sold) {
     $.ajax({
         method: "PUT",
         url: "/api/products/" + id,
-        data: JSON.stringify({name: name, barCode: barCode, serialNumber: serialNumber})
+        data: JSON.stringify({name: name, barCode: barCode, serialNumber: serialNumber, sold: sold})
     }).done(function(response) {
     	swal("Product '" + id + "' updated!", { icon: "success" });
         load();
@@ -56,7 +56,7 @@ function load() {
     $("#content").children().remove();
     $.getJSON("/api/products", function (data) {
         $.each(data, function (key, val) {
-            $("<tr><td>" + val.id + "</td><td>" + val.name + "</td><td>" + val.barCode + "</td><td>" + val.serialNumber + "</td>" +
+            $("<tr><td>" + val.id + "</td><td>" + val.name + "</td><td>" + val.barCode + "</td><td>" + val.serialNumber + "</td><td>" + (val.sold ? "✔️" : "") +
                     "<td>" +
                     "<button data-action='edit' class='btn btn-primary btn-sm product-edit' " +
                     "data-toggle='modal' " +
@@ -64,6 +64,7 @@ function load() {
                     "data-name='" + val.name + "' " +
                     "data-bar-code='" + val.barCode + "' " +
                     "data-serial-number='" + val.serialNumber + "' " +
+                    "data-sold='" + val.sold + "' " +
                     "data-id='" + val.id + "'>" +
                     "<span class='glyphicon glyphicon-pencil'></span>" +
                     "</button>" +
@@ -98,8 +99,9 @@ function initModal() {
             modal.find('#product-name').val("");
             modal.find('#product-bar-code').val("");
             modal.find('#product-serial-number').val("");
+            modal.find('#product-sold').prop("checked", false);
             productAction.click(function () {
-                create($("#product-name").val(), $("#product-bar-code").val(), $("#product-serial-number").val());
+                create($("#product-name").val(), Number($("#product-bar-code").val()), Number($("#product-serial-number").val()), $("#product-sold").prop("checked"));
                 $('#productModal').modal('toggle');
             });
         } else {
@@ -107,8 +109,9 @@ function initModal() {
             modal.find('#product-name').val(button.data("name"));
             modal.find('#product-bar-code').val(button.data("barCode"));
             modal.find('#product-serial-number').val(button.data("serialNumber"));
+            modal.find('#product-sold').prop("checked", button.data("sold"));
             productAction.click(function () {
-                update(id, $("#product-name").val(), $("#product-bar-code").val(), $("#product-serial-number").val());
+                update(id, $("#product-name").val(), Number($("#product-bar-code").val()), Number($("#product-serial-number").val()), $("#product-sold").prop("checked"));
                 $('#productModal').modal('toggle');
             });
         }

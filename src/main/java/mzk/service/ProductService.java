@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -14,11 +15,9 @@ import mzk.model.Product;
 public class ProductService {
 	
 	// TODO Para um melhor controle sobre o estoque e posterior geração de relatórios o ideal é que os produtos
-	// vendidos não sejam excluídos do banco de dados, mas sim marcados como tal através de algum campo adicional
-	// 'sold' na entidade 'Product' e/ou então que seu ID seja incluído na lista de items de um pedido (Order)
-	// para que seja considerado como não mais disponível.
-	// Como não foi especificado se deveríamos entrar nesse escopo durante esse teste implementei apenas o CRUD
-	// básico que permite além de todos os outros métodos, também apagar um produto através do DELETE
+	// vendidos não sejam excluídos do banco de dados através do método DELETE, mas sim marcados como tal através do
+	// campo 'sold' na entidade 'Product' e/ou então que seu ID seja incluído na lista de items de um pedido (Order)
+	// para que não seja mais considerado como disponível.
 
 	private Map<Integer, Product> products = new LinkedHashMap<>();
 
@@ -83,7 +82,13 @@ public class ProductService {
 	
 	public void update(RoutingContext routingContext) {
 		
-		final Product updateData = Json.decodeValue(routingContext.getBodyAsString(), Product.class);
+		// We don't map to 'Product' class here to avoid that the id counter gets incremented. So instead we use a regular JsonObject	
+		JsonObject updateData = routingContext.getBodyAsJson();
+		
+		String updateName = updateData.getString("name");
+		Long updateBarCode = updateData.getLong("barCode");
+		Integer updateSerialNumber = updateData.getInteger("serialNumber");
+		boolean updateSold = updateData.getBoolean("sold");
 		
 		final String id = routingContext.request().getParam("id");
 		if (id == null || updateData == null) {
@@ -95,28 +100,28 @@ public class ProductService {
 				routingContext.response().setStatusCode(404).end();
 			} else {
 
-				if(updateData.getName() == null || updateData.getName() == "") {
+				if(updateName == null || updateName == "") {
 					routingContext.response().setStatusCode(400).end("Field 'name' is required");
-				} else if(updateData.getBarCode() == null) {
+				} else if(updateBarCode == null) {
 					routingContext.response().setStatusCode(400).end("Field 'barCode' is required");
-				} else if(updateData.getSerialNumber() == null) {
+				} else if(updateSerialNumber == null) {
 					routingContext.response().setStatusCode(400).end("Field 'serialNumber' is required");
 				} else {
 
-					// Check if new product already exists on products list (same barcode and serial number)
-					// In the update method we must also exclude the product we're editing from this list of course
+					// Check if another product (different id) with same barcode and serial number already exists on products list
 					List<Product> existingProducts = products.values().stream().filter(item ->
 								item.getId() != idAsInteger &&
-								item.getBarCode().equals(updateData.getBarCode()) &&
-								item.getSerialNumber().equals(updateData.getSerialNumber())
+								item.getBarCode().equals(updateBarCode) &&
+								item.getSerialNumber().equals(updateSerialNumber)
 							).collect(Collectors.toList());
 								
 					if(existingProducts.size() > 0) {
 						routingContext.response().setStatusCode(400).end("Duplicated products not allowed. There's already a product with the same BarCode and SerialNumber");
 					} else {
-						p.setName(updateData.getName());
-						p.setBarCode(updateData.getBarCode());
-						p.setSerialNumber(updateData.getSerialNumber());
+						p.setName(updateName);
+						p.setBarCode(updateBarCode);
+						p.setSerialNumber(updateSerialNumber);
+						p.setSold(updateSold);
 						routingContext.response().setStatusCode(201).putHeader("content-type", "application/json; charset=utf-8").end(Json.encodePrettily(p));	
 					}
 								
@@ -139,15 +144,15 @@ public class ProductService {
 	}
 
 	private void createMockData() {
-		addProduct("Camisa Polo Azul Marinho", 7898392930332L, 1);
-		addProduct("Camisa Polo Azul Marinho", 7898392930332L, 2);
-		addProduct("Camisa Polo Azul Marinho", 7898392930332L, 3);
-		addProduct("Regata Masculina B-01 MXD", 5280001427920L, 1);
-		addProduct("Bermuda Sarja Slim", 1466571884344L, 1);
+		addProduct("Camisa Polo Azul Marinho", 7898392930332L, 1, false);
+		addProduct("Camisa Polo Azul Marinho", 7898392930332L, 2, false);
+		addProduct("Camisa Polo Azul Marinho", 7898392930332L, 3, false);
+		addProduct("Regata Masculina B-01 MXD", 5280001427920L, 1, false);
+		addProduct("Bermuda Sarja Slim", 1466571884344L, 1, false);
 	}
 
-	private void addProduct(String name, Long barCode, int serialNumber) {
-		Product p = new Product(name, barCode, serialNumber);
+	private void addProduct(String name, Long barCode, int serialNumber, boolean sold) {
+		Product p = new Product(name, barCode, serialNumber, sold);
 		products.put(p.getId(), p);
 	}
 	

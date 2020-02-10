@@ -93,11 +93,13 @@ public class TestMainVerticle {
 		String productName = "Test";
 		Long productBarCode = 1L;
 		Integer productSerialNumber = 1;
+		boolean productSold = false;
 
 		JsonObject json = new JsonObject()
 				.put("name", productName)
 				.put("barCode", productBarCode)
-				.put("serialNumber", productSerialNumber);
+				.put("serialNumber", productSerialNumber)
+				.put("sold", false);
 
 		webClient.post(API_PRODUCTS)
 
@@ -115,6 +117,7 @@ public class TestMainVerticle {
 						assertEquals(productName, p.getName());
 						assertEquals(productBarCode, p.getBarCode());
 						assertEquals(productSerialNumber, p.getSerialNumber());
+						assertEquals(productSold, p.isSold());
 
 						testContext.completeNow();
 					});
@@ -124,6 +127,35 @@ public class TestMainVerticle {
 	
 	@Test
 	@Order(5)
+	@DisplayName("Test /api/products POST (Add DUPLICATED BarCode + SerialNumber and check for error)")
+	public void checkApiAddProductDuplicate(WebClient webClient, Vertx vertx, VertxTestContext testContext) {
+		
+		String productName = "Test";
+		Long productBarCode = 1L;
+		Integer productSerialNumber = 1;
+		
+		JsonObject json = new JsonObject()
+				.put("name", productName)
+				.put("barCode", productBarCode)
+				.put("serialNumber", productSerialNumber)
+				.put("sold", false);
+		
+		webClient.post(API_PRODUCTS)
+		
+		.putHeader("content-type", "application/json")
+		.putHeader("content-length", Integer.toString(json.toString().length()))
+		.sendJson(json, testContext.succeeding(resp -> {
+			
+			testContext.verify(() -> {
+				assertEquals(400, resp.statusCode());
+				testContext.completeNow();
+			});
+		}));
+		
+	}
+	
+	@Test
+	@Order(6)
 	@DisplayName("Test /api/products/0 PUT (Update existing product)")
 	public void checkApiUpdateProduct(WebClient webClient, Vertx vertx, VertxTestContext testContext) {
 
@@ -131,11 +163,13 @@ public class TestMainVerticle {
 		String productName = "New name";
 		Long productBarCode = 2L;
 		Integer productSerialNumber = 2;
+		boolean productSold = true;
 
 		JsonObject json = new JsonObject()
 				.put("name", productName)
 				.put("barCode", productBarCode)
-				.put("serialNumber", productSerialNumber);
+				.put("serialNumber", productSerialNumber)
+				.put("sold", productSold);
 
 		webClient.put(API_PRODUCTS + "/" + productId)
 
@@ -153,6 +187,7 @@ public class TestMainVerticle {
 						assertEquals(productName, p.getName());
 						assertEquals(productBarCode, p.getBarCode());
 						assertEquals(productSerialNumber, p.getSerialNumber());
+						assertEquals(productSold, p.isSold());
 
 						testContext.completeNow();
 					});
@@ -161,7 +196,7 @@ public class TestMainVerticle {
 	}
 	
 	@Test
-	@Order(6)
+	@Order(7)
 	@DisplayName("Test /api/products/0 DELETE (Remove existing product)")
 	public void checkApiDeleteProduct(WebClient webClient, Vertx vertx, VertxTestContext testContext) {
 		
