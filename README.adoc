@@ -12,7 +12,8 @@ Apesar de especificado que não era necessário um "cliente" para teste das APIs
 
 image:docs/images/panel.png[]
 
-Nota: como não foi deixado claro como seria dado "baixa" nos produtos vendidos, implementei o método DELETE pra que isso seja feito. O problema é que isso exclui completamente o produto do sistema, ficando impossível depois gerar um relatório de produtos vendidos por exemplo. O ideal seria que tivesse uma flag `sold` do tipo `boolean` na entidade `Product` ou uma nova entidade `Order` com uma lista de itens `Product` onde os produtos seriam incluídos.
+Nota: como não foi deixado claro como seria dado "baixa" nos produtos vendidos, implementei um campo 'sold' para sinalizar uma venda.
+Está disponível também o método DELETE, mas não é recomendada sua utilização pois ele apaga totalmente o registro do sistema, inviabilizando uma geração de relatórios de produtos vendidos por exemplo.
 
 = REST API
 
