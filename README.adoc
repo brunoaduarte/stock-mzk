@@ -36,27 +36,32 @@ O único endpoint disponível na API é o endereço http://localhost:8080/api/pr
     "id" : 0,
     "name" : "Camisa Polo Azul Marinho",
     "barCode" : 7898392930332,
-    "serialNumber" : 1
+    "serialNumber" : 1,
+    "sold": false
   }, {
     "id" : 1,
     "name" : "Camisa Polo Azul Marinho",
     "barCode" : 7898392930332,
-    "serialNumber" : 2
+    "serialNumber" : 2,
+    "sold": false
   }, {
     "id" : 2,
     "name" : "Camisa Polo Azul Marinho",
     "barCode" : 7898392930332,
-    "serialNumber" : 3
+    "serialNumber" : 3,
+    "sold": false
   }, {
     "id" : 3,
     "name" : "Regata Masculina B-01 MXD",
     "barCode" : 5280001427920,
-    "serialNumber" : 1
+    "serialNumber" : 1,
+    "sold": false
   }, {
     "id" : 4,
     "name" : "Bermuda Sarja Slim",
     "barCode" : 1466571884344,
-    "serialNumber" : 1
+    "serialNumber" : 1,
+    "sold": false
   }]
 
 == Lê um produto
@@ -76,7 +81,8 @@ O único endpoint disponível na API é o endereço http://localhost:8080/api/pr
     "id" : 0,
     "name" : "Camisa Polo Azul Marinho",
     "barCode" : 7898392930332,
-    "serialNumber" : 1
+    "serialNumber" : 1,
+    "sold": false
   }
   
 == Adiciona um produto
@@ -85,7 +91,7 @@ O único endpoint disponível na API é o endereço http://localhost:8080/api/pr
 
 `POST /api/products`
 
-    curl -i -H 'Accept: application/json' -d '{"name":"Test","barCode":1, "serialNumber":1}' http://localhost:8080/api/products
+    curl -i -H 'Accept: application/json' -d '{"name":"Test","barCode":1, "serialNumber":1, "sold": false}' http://localhost:8080/api/products
 
 === Response
 
@@ -97,7 +103,8 @@ O único endpoint disponível na API é o endereço http://localhost:8080/api/pr
     "id" : 5,
     "name" : "Test",
     "barCode" : 1,
-    "serialNumber" : 1
+    "serialNumber" : 1,
+    "sold": false
   }
   
 == Altera um produto
@@ -106,7 +113,7 @@ O único endpoint disponível na API é o endereço http://localhost:8080/api/pr
 
 `PUT /api/products/0`
 
-    curl -X PUT -H 'Accept: application/json' -d '{"name":"Alterado","barCode":2, "serialNumber":2}' http://localhost:8080/api/products/0
+    curl -X PUT -H 'Accept: application/json' -d '{"name":"Alterado","barCode":2, "serialNumber":2, "sold": true}' http://localhost:8080/api/products/0
 
 === Response
 
@@ -114,7 +121,8 @@ O único endpoint disponível na API é o endereço http://localhost:8080/api/pr
     "id" : 0,
     "name" : "Alterado",
     "barCode" : 2,
-    "serialNumber" : 2
+    "serialNumber" : 2,
+    "sold": true
   }
   
 == Apaga um produto
