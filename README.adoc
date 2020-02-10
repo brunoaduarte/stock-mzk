@@ -15,6 +15,8 @@ image:docs/images/panel.png[]
 Nota: como não foi deixado claro como seria dado "baixa" nos produtos vendidos, implementei um campo 'sold' para sinalizar uma venda.
 Está disponível também o método DELETE, mas não é recomendada sua utilização pois ele apaga totalmente o registro do sistema, inviabilizando uma geração de relatórios de produtos vendidos por exemplo.
 
+Conforme solicitado foram implementadas verificações de duplicidade (código de barras e serial iguais) nos métodos de cadastrar e alterar produtos.
+
 = REST API
 
 O único endpoint disponível na API é o endereço http://localhost:8080/api/products , e nele foi implementado o CRUD.
