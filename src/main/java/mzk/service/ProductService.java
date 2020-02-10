@@ -26,15 +26,24 @@ public class ProductService {
 		createMockData();
 		
 		router.get("/api/products").handler(this::getAll);
+		router.get("/api/products/available").handler(this::getAllAvailable);
 	    router.route("/api/products*").handler(BodyHandler.create());
 	    router.post("/api/products").handler(this::add);
 	    router.get("/api/products/:id").handler(this::get);
 	    router.put("/api/products/:id").handler(this::update);
 	    router.delete("/api/products/:id").handler(this::delete);
 	}
-
+	
 	public void getAll(RoutingContext routingContext) {
-		routingContext.response().putHeader("content-type", "application/json; charset=utf-8").end(Json.encodePrettily(products.values()));
+		routingContext.response().putHeader("content-type", "application/json; charset=utf-8").end(
+				Json.encodePrettily(products.values())
+				);
+	}
+	
+	public void getAllAvailable(RoutingContext routingContext) {
+		routingContext.response().putHeader("content-type", "application/json; charset=utf-8").end(
+				Json.encodePrettily(products.values().stream().filter(p -> !p.isSold()).collect(Collectors.toList()))
+				);
 	}
 	
 	public void get(RoutingContext routingContext) {

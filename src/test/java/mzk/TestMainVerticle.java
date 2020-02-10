@@ -156,7 +156,7 @@ public class TestMainVerticle {
 	
 	@Test
 	@Order(6)
-	@DisplayName("Test /api/products/0 PUT (Update existing product)")
+	@DisplayName("Test /api/products/0 PUT (Update existing product, mark as sold)")
 	public void checkApiUpdateProduct(WebClient webClient, Vertx vertx, VertxTestContext testContext) {
 
 		int productId = 0;
@@ -197,6 +197,19 @@ public class TestMainVerticle {
 	
 	@Test
 	@Order(7)
+	@DisplayName("Test /api/products/available GET (List available products)")
+	void checkApiGetListAvailableProducts(WebClient webClient, Vertx vertx, VertxTestContext testContext) {
+		webClient.get(API_PRODUCTS + "/available").as(BodyCodec.string())
+				.send(testContext.succeeding(resp -> {
+					testContext.verify(() -> {
+						assertEquals(200, resp.statusCode());
+						testContext.completeNow();
+					});
+				}));
+	}
+	
+	@Test
+	@Order(8)
 	@DisplayName("Test /api/products/0 DELETE (Remove existing product)")
 	public void checkApiDeleteProduct(WebClient webClient, Vertx vertx, VertxTestContext testContext) {
 		

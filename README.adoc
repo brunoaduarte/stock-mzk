@@ -25,7 +25,8 @@ O único endpoint disponível na API é o endereço http://localhost:8080/api/pr
 
 === Request
 
-`GET /api/products`
+`GET /api/products` (Lista todos os produtos)
+`GET /api/products/available` (Lista apenas produtos disponíveis, 'sold = false')
 
     curl -i -H 'Accept: application/json' http://localhost:8080/api/products
 
